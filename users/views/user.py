@@ -31,6 +31,15 @@ class UserView(APIView):
     ),
     responses={
       201: '',
+      400: openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+          'error': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+        example={
+          "error": "Email já cadastrado"
+        }
+      ),
       422: openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
