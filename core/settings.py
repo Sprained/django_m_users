@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_swagger',
+    'drf_yasg',
     'users'
 ]
 
@@ -76,6 +76,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
