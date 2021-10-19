@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import sys
 import os
 
 from pathlib import Path
@@ -90,21 +91,36 @@ SWAGGER_SETTINGS = {
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-    'erp': {
-        'ENGINE': os.getenv('ENGINE'),
-        'NAME': os.getenv('DATABASE'),
-        'USER': os.getenv('USER_DATABASE'),
-        'PASSWORD': os.getenv('PASS'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT'),
+if not 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        },
+        'erp': {
+            'ENGINE': os.getenv('ENGINE'),
+            'NAME': os.getenv('DATABASE'),
+            'USER': os.getenv('USER_DATABASE'),
+            'PASSWORD': os.getenv('PASS'),
+            'HOST': os.getenv('HOST'),
+            'PORT': os.getenv('PORT'),
+        }
     }
-}
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        },
+        'erp': {
+            'ENGINE': os.getenv('ENGINE_TEST'),
+            'NAME': os.getenv('DATABASE_TEST'),
+            'USER': os.getenv('USER_DATABASE_TEST'),
+            'PASSWORD': os.getenv('PASS_TEST'),
+            'HOST': os.getenv('HOST_TEST'),
+            'PORT': os.getenv('PORT_TEST'),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
