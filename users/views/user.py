@@ -10,7 +10,7 @@ from users.serializer import UserSerializer
 from core.erros import ExceptionMessageBuilder
 from users.services import UserService
 
-class UserView(APIView):
+class RegisterUserView(APIView):
 
   def __init__(self):
     self.userService = UserService()
@@ -81,7 +81,68 @@ class UserView(APIView):
         return Response(status=status.HTTP_201_CREATED)
 
       return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+class UpdateUserView(APIView):
+
+  def __init__(self):
+    self.userService = UserService()
   
+  @swagger_auto_schema(
+    operation_description="partial_update description override",
+    manual_parameters=[
+      openapi.Parameter('id', openapi.IN_QUERY, description='id user', type=openapi.TYPE_INTEGER)
+    ],
+    request_body=openapi.Schema(
+      type=openapi.TYPE_OBJECT,
+      properties={
+        'nome': openapi.Schema(type=openapi.TYPE_STRING),
+        'email': openapi.Schema(type=openapi.TYPE_STRING),
+        'phone': openapi.Schema(type=openapi.TYPE_STRING),
+        'password': openapi.Schema(type=openapi.TYPE_STRING),
+      },
+      example={
+        'nome': 'teste',
+        'email': 'teste@email.com',
+        'phone': '81987012741',
+        'password': 'teste@123'
+      }
+    ),
+    responses={
+      200: '',
+      404: openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+          'error': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+        example={
+          "error": "Usuário não encontrado"
+        }
+      ),
+      422: openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+          'nome': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'email': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'phone': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'password': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+        },
+        example={
+          'nome': [
+            'This field is optional.'
+          ],
+          'email': [
+            'This field is optional.'
+          ],
+          'phone': [
+            'This field is optional.'
+          ],
+          'password': [
+            'This field is optional.'
+          ]
+        }
+      )
+    }
+  )
   def patch(self, request, id):
     with transaction.atomic():
       try:

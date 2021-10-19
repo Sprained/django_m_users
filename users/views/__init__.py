@@ -1,1 +1,1 @@
-from .user import UserView
+from .user import RegisterUserView, UpdateUserView
