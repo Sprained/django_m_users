@@ -6,11 +6,14 @@ from rest_framework import status
 from django.db import transaction
 from drf_yasg import openapi
 
-from users.serializer import RegisterUserSerializer
+from users.serializer import UserSerializer
 from core.erros import ExceptionMessageBuilder
 from users.services import UserService
 
-class UserView(APIView):
+class RegisterUserView(APIView):
+
+  def __init__(self):
+    self.userService = UserService()
 
   @swagger_auto_schema(
     operation_description="partial_update description override",
@@ -68,13 +71,88 @@ class UserView(APIView):
   def post(self, request):
     with transaction.atomic():
       try:
-        UserService.verify_user(request.data['email'])
+        self.userService.verify_user(request.data['email'])
       except ExceptionMessageBuilder as e:
         return Response(e.message, status=e.status_code)
 
-      serializer = RegisterUserSerializer(data=request.data)
+      serializer = UserSerializer(data=request.data)
       if serializer.is_valid():
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+
+      return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+class UpdateUserView(APIView):
+
+  def __init__(self):
+    self.userService = UserService()
+  
+  @swagger_auto_schema(
+    operation_description="partial_update description override",
+    manual_parameters=[
+      openapi.Parameter('id', openapi.IN_QUERY, description='id user', type=openapi.TYPE_INTEGER)
+    ],
+    request_body=openapi.Schema(
+      type=openapi.TYPE_OBJECT,
+      properties={
+        'nome': openapi.Schema(type=openapi.TYPE_STRING),
+        'email': openapi.Schema(type=openapi.TYPE_STRING),
+        'phone': openapi.Schema(type=openapi.TYPE_STRING),
+        'password': openapi.Schema(type=openapi.TYPE_STRING),
+      },
+      example={
+        'nome': 'teste',
+        'email': 'teste@email.com',
+        'phone': '81987012741',
+        'password': 'teste@123'
+      }
+    ),
+    responses={
+      200: '',
+      404: openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+          'error': openapi.Schema(type=openapi.TYPE_STRING)
+        },
+        example={
+          "error": "Usuário não encontrado"
+        }
+      ),
+      422: openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+          'nome': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'email': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'phone': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+          'password': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+        },
+        example={
+          'nome': [
+            'This field is optional.'
+          ],
+          'email': [
+            'This field is optional.'
+          ],
+          'phone': [
+            'This field is optional.'
+          ],
+          'password': [
+            'This field is optional.'
+          ]
+        }
+      )
+    }
+  )
+  def patch(self, request, id):
+    with transaction.atomic():
+      try:
+        user = self.userService.exist_user(id)
+      except ExceptionMessageBuilder as e:
+        return Response(e.message, status=e.status_code)
+
+      serializer = UserSerializer(user, data=request.data, partial=True)
+      if serializer.is_valid():
+        serializer.save()
+        return Response(status=status.HTTP_200_OK)
 
       return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
